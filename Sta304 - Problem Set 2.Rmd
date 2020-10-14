@@ -1,6 +1,6 @@
 ---
 title: "Sta304 - Problem Set 2"
-author: "Jessica Glustien Nick Callow Charles Zhang Dongqi Bi"
+author: "Jessica Glustien,  Nick Callow, Min Zhang, Dongqi Bi"
 date: "Oct 19 2020"
 output: pdf_document
 ---
