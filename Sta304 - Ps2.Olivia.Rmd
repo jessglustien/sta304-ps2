@@ -17,7 +17,11 @@ Here is where you give a brief (one paragraph overview of your entire paper). Th
 
 ## Introduction
 
-Here is where you should give insight into the setting and introduce the goal of the analysis. Here you can introduce ideas and basic concepts regarding the study setting and the potential model. Again, this is the introduction, so you should be explaining the importance of the work that is ahead and hopefully build some suspense for the reader. You can also highlight what will be included in the subsequent sections.
+In this assignemnt, our team will use data from the 2017 General Social Survey on Family (GSS) package monitored by Statistics Canada to estimate a woman's age at her first birth. The 2017 GSS is a sample survey conducted from February 2 to November 30 2018 via telephone. The target population includes all Canadians who are 15 or over living in the 10 provinces.
+
+When our team members are doing research about factors affecting a woman's age at her first birth, we found that "women with college degrees have children an average of seven years later than those without." This interests us a lot as in general, if a woman is pursuing a professional education like a law degree, she needs to put much more effort and time to complete it, which will delay her age at her first birth. This also potentially affects their marriage age, that is, if a woman gets married at a relatively old age, she may have her first child at a relatively old age too. However, if a woman decides to have more children, she may start to have her first child at a relatively young age. 
+
+In consequence, we decide that we will set variables Ever_married, Education and Total_children as the predictor variables and Age_at_first_birth will be response variable from gss.csv dataset. Based on our assumptions, we also think that the statistical model we will create should be linear...
 
 ## Data
 
