@@ -1,6 +1,6 @@
 ---
 title: "Sta304 - Assignment 2"
-author: "Jessica Glustien Nick Callow Charles Zhang Dongqi Bi"
+author: "Jessica Glustien, Nick Callow, Min Zhang, Dongqi Bi"
 date: "Oct 19 2020"
 output: pdf_document
 ---
@@ -22,6 +22,11 @@ In this assignemnt, our team will use data from the 2017 General Social Survey o
 When our team members are doing research about factors affecting a woman's age at her first birth, we found that "women with college degrees have children an average of seven years later than those without." This interests us a lot as in general, if a woman is pursuing a professional education like a law degree, she needs to put much more effort and time to complete it, which will delay her age at her first birth. This also potentially affects their marriage age, that is, if a woman gets married at a relatively old age, she may have her first child at a relatively old age too. However, if a woman decides to have more children, she may start to have her first child at a relatively young age. 
 
 In consequence, we decide that we will set variables Ever_married, Education and Total_children as the predictor variables and Age_at_first_birth will be response variable from gss.csv dataset. Based on our assumptions, we also think that the statistical model we will create should be linear...
+
+Reference:
+1. https://sda-artsci-utoronto-ca.myaccess.library.utoronto.ca/sdaweb/dli2/gss/gss31/gss31/more_doc/GSS31_Codebook.pdf
+2. https://sda-artsci-utoronto-ca.myaccess.library.utoronto.ca/sdaweb/dli2/gss/gss31/gss31/more_doc/GSS31_User_Guide.pdf
+3. https://www.nytimes.com/interactive/2018/08/04/upshot/up-birth-age-gap.html
 
 ## Data
 
