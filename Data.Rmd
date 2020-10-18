@@ -1,0 +1,145 @@
+---
+title: "Data Section"
+author: "Nick Callow"
+date: "10/15/2020"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r Data Set and Libraries, message=FALSE}
+# Calling the Data Set #
+
+# install.packages("dplyr")
+# install.packages("gridExtra")
+
+library(readr)
+gss <- read_csv("gss.csv")
+
+library(tidyverse)
+library(visdat)
+library(skimr)
+library(gridExtra)
+
+```
+
+# Data
+
+The data set selected for analysis is the 2017 General Social Survey (GSS). Data collection took place between February and November of 2017, and the goal of the survey is to learn more about Canadian family structures (Statistics Canada, 2017). In this section, we provide an analysis of the survey, including its key features, methdology, and merits.
+
+## Target Population and Sampling Frame
+
+To learn more about Canadian family structures, the GSS focuses on a specific section of Canadians. This group, called the *target population* is "all non-institutionalized persons 15 years of age or older, living in the ten provinces of Canada" (Statistics Canada, 2017, Data Sources and Methdology Section). Of note is that residents of the territories are excluded from the GSS. This decision by Statistics Canada is explored further in the *Weaknesses* section below.
+
+To survey individuals in the target population, we need to know who they are and how to contact them. This list of people is called the *sampling frame*, and Statistics Canada recruits individuals from this list (according to the sampling approach detailed below). The sampling frame of the GSS is built in the following way. First, a list of landline and cellular phone numbers are obtained from the Census (Statistics Canada, 2017). These phone numbers are then grouped into households if they share the same address (Statistics Canada, 2017). Ideally, everyone in the target population is included in the sampling frame (Wu & Thompson, 2020). However, when this is the not the case, it introduces a bias in the survey known as *coverage error*. The sampling frame of the GSS does not capture everyone in the target population. Specifically, individuals without telephone service, or a known phone number, will be excluded (Statistics Canada, 2017). This coverage error implies that the GSS may not be entirely representative of the Canadian population, and therefore, our estimates should be approached cautiously.
+
+## Sampling Approach
+
+After creating the sampling frame, Statistics Canada needs to decide how to pick individuals from this list, since it would be too costly to survey them all. The method of selecting Canadians from the frame is called the *sampling approach*. The GSS employs a *stratified random sampling approach*. First, the target population is divided into smaller groups, called strata, where individuals share a common characteristics or property (Caetano, 2020b). In this survey, Canadians are grouped by geographic location for a total of twenty seven strata (Statistics Canada, 2017). Second, a percentage of households in each stratum are randomly selected (Statistics Canada, 2017). Third, one eligible member of each chosen household is randomly selected for participation (Statistics Canada, 2017). These last two steps employ *simple random sampling*, meaning survey participants are picked randomly, and each member of the sampling frame has an equal chance of selection (Caetano, 2020b).
+
+There are several benefits to this method. First, the GSS uses a probability sampling approach (stratified random sampling). The odds of any one individual being included in the survey are known, and can be weighted to reflect the characteristics of the populations (Caetano, 2020a). Therefore, we know that our data reflects well Canadian family structures. Second, this approach can be replicated, allowing for verification and comparison (Caetano, 2020a). However, there are some limitations. First, probability sampling, including stratified random sampling, is very costly. The decline in GSS sample sizes since 1999 may reflect this fact (Statistics Canada, 2019). Second, random selection implies that participants may not want to participate in the survey (Caetano, 2020a). Therefore, the non-response rate may be high, and this may introduce bias into the survey (see Sampled Population and Missing data below).
+
+## Sampled Population and Missing Data
+
+```{r Distribution of Ages, message=FALSE}
+
+gss %>% 
+  select(age) %>% 
+  ggplot(mapping = aes(x=age)) + geom_histogram() + ggtitle("Figure 1: Distribution of Ages") + theme(plot.title = element_text(size = 9))
+
+```
+
+```{r Distributions of Marital and Minority Statuses, message=FALSE}
+
+plot1a <- gss %>% 
+  select(marital_status) %>% 
+  ggplot(mapping = aes(x=marital_status)) + geom_bar() + ggtitle("Figure 2: Distribution of Marital Status") + theme(plot.title = element_text(size = 9)) + theme(axis.text.x = element_text(angle = 90))
+
+plot1b <- gss %>% 
+  select(vis_minority) %>% 
+  ggplot(mapping = aes(x=vis_minority)) + geom_bar() + ggtitle("Figure 3: Distribution of Visible Minority Status") + theme(plot.title = element_text(size = 9)) + theme(axis.text.x = element_text(angle = 90))
+
+grid.arrange(plot1a, plot1b, ncol=2)
+
+```
+
+Not everyone selected to participate in the survey will do so. The set of individuals who take part are called the *sampled population* (Wu & Thompson, 2020). In the GSS, a total of $n = 20,602$ individuals completed some or all of the survey questions. This yielded a response rate of $52.6\%$. The non-response rate appears fairly high, raising concerns about whether some demographics were consistently left out the data. The above figures represent distributions of several key demographic variables (age, marital status, and visible minority status). We compared these distributions with results from the 2016 Census. 
+
+
+### Age
+
+The distribution of ages in the GSS differs somewhat from the Canadian population, as represented in the Census. There are too many older individuals in the survey, particularly those eighty-years and older (Statistics Canada, 2019). Likewise, Census data portrays a *unimodal* distribution of ages, skewed slightly toward the older side of the spectrum (Statistics Canada, 2019). In contrast, the GSS appears *bi-modal*, with spikes in the mid-thirties and early sixties.
+
+### Marital Status
+
+The sampling of marital status remains fairly consistent between the GSS and Census 2016. Specifically, $43\%$ and $44\%$ of respondents reported not being in a couple (divorced, separated, single, widowed) in the Census and GSS, respectively (Statistics Canada, 2019). This result indicates the GSS is representative of the Canadian population on this indicator, which is of particular importance to our analysis.
+
+
+### Visible Minority Status
+
+The GSS has undersampled visible minorities. According to Census data in 2016, approximately $25\%$ percent of respondents identified as a visible minority (Statistics Canada, 2019). Comparatively, only approximately $13\%$ of GSS respondents identified as a visible minority.
+
+
+```{r Missing Data, message=FALSE}
+
+gss_plot4 <- gss %>%
+  select(ever_married, education, total_children, age_at_first_birth)
+
+plot4 <- visdat::vis_miss(gss_plot4)
+
+plot4 + ggtitle("Figure 4: Missing Data in Variables of Interest")
+
+```
+
+Missing data is a concern for any survey. Individuals who agree to participate may not complete all the questions. When this happens, holes appear in the data, and this makes analysis more difficult. As seen in Figure 1, all of our predictor variables have limited missing data. In contrast, our response variable, *age_at_first_birth*, has a non-response rate of $38.18\%$. While this may seem large and concerning, this rate is over inflated. Many of the participants with missing data in *age_at_first_birth*, have no children. Therefore, this question was not applicable to them. In supplementary analysis (see Appendix), we find that of the $n=20,602$ respondents, only $1,286$ individuals, or $6.2\%$, who had children did not respond to *age_at_first_birth*. Therefore, we consider the variable still worthy and capable of analysis. 
+
+
+```{r}
+
+gss %>% 
+  mutate(outcome_valid = ifelse(age_at_first_birth == "NA" & total_children == 0, 1,0)) %>%
+  mutate(outcome_missing = ifelse(age_at_first_birth == "NA" & total_children > 1, 1,0)) %>% 
+  count(outcome_missing == 1, outcome_valid==1)
+
+```
+
+```{r, results = "hide"}
+
+nrow(gss[gss$age_at_first_birth=="NA",])
+
+nrow(gss[gss$marital_status=="Living common-law",])
+nrow(gss[gss$marital_status=="Married",])
+nrow(gss[gss$vis_minority=="Visible minority",])
+
+nrow(gss[gss$marital_status=="Divorced",])
+nrow(gss[gss$marital_status=="Separated",])
+nrow(gss[gss$marital_status=="Single, never married",])
+nrow(gss[gss$marital_status=="Widowed",])
+
+
+```
+
+
+
+## References
+
+Caetano, S. (2020a, September 21). Probability versus Non-Probability Sampling [PowerPoint Slides]. Quercus. https://q.utoronto.ca/courses/184060/files/8975319?module_item_id=1816946
+
+Caetano, S. (2020b, September 28). Sampling Techniques [PowerPoint Slides]. Quercus. https://q.utoronto.ca/courses/184060/files/9058287?module_item_id=1828122
+
+Statistics Canada (2017, December 19). *General Social Survey - Family (GSS)*. Government of Canada. https://www23.statcan.gc.ca/imdb/p2SV.pl?Function=getSurvey&Id=335816
+
+Statistics Canada. (2019, April 3). Historical Age Pyramid. Retrieved October 18, 2020, from https://www12.statcan.gc.ca/census-recensement/2016/dp-pd/pyramid/pyramid.cfm?type=1
+
+Statistics Canada. (2019, June 18). Census Profile, 2016 Census. Retrieved October 18, 2020, from https://www12.statcan.gc.ca/census-recensement/2016/dp-pd/prof/details/page.cfm?Lang=E
+
+Wu, C., & Thompson, M. E. (2020). *Sampling Theory and Practice.* Cham: Springer International Publishing.
+
+
+
+
+
