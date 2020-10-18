@@ -1,0 +1,108 @@
+---
+title: "Sta304 - Assignment 2"
+author: "Jessica Glustien Nick Callow Charles Zhang Dongqi Bi"
+date: "Oct 19 2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+
+## Abstract
+
+Here is where you give a brief (one paragraph overview of your entire paper). This should include some background/introduction, some methodology, results and conclusions.
+
+## Introduction
+
+Here is where you should give insight into the setting and introduce the goal of the analysis. Here you can introduce ideas and basic concepts regarding the study setting and the potential model. Again, this is the introduction, so you should be explaining the importance of the work that is ahead and hopefully build some suspense for the reader. You can also highlight what will be included in the subsequent sections.
+
+## Data
+
+Introduce the data, explain why it was selected. Make sure to comment on important features and highlight any potential drawbacks to the data.
+
+## Model
+
+Introduce the selected model here. It is expected that you will use some mathematical notation here. If you do please ensure that all notation is explained. You may also want to discuss any special (hypothetical) cases of your model here, as well as any caveats.  
+
+## Results
+
+Here you will include all results. This includes descriptive statistics, graphs, figures, tables, and model results. Please ensure that everything is well formatted and in a report style. You must also provide an explanation of the results in this section. You can overflow to an Appendix if needed. 
+
+Please ensure that everything is well labelled. So if you have multiple histograms and plots, calling them Figure 1, 2, 3, etc. and referencing them as Figure 1, Figure 2, etc. in your report will be expected. The reader should not get lost in a sea of information. Make sure to have the results be clean, well formatted and digestible.
+
+```{r, echo=FALSE, include=TRUE }
+library(janitor)
+library(tidyverse)
+gss <- read.csv("gss.csv")
+data1 <- gss %>% select(ever_married, education, total_children, age_at_first_birth)%>%filter(!is.na(total_children), !is.na(age_at_first_birth), ever_married!="Don't know")
+
+data1$education[data1$education=="Less than high school diploma or its equivalent"] <- "Less than high school"
+data1$education[data1$education=="High school diploma or a high school equivalency certificate"] <- "High School"
+data1$education[data1$education=="College, CEGEP or other non-university certificate or di..."] <- "College"
+data1$education[data1$education=="University certificate or diploma below the bachelor's level"] <- "University below bachelor"
+data1$education[data1$education=="Bachelor's degree (e.g. B.A., B.Sc., LL.B.)"] <- "Bachelor"
+data1$education[data1$education=="University certificate, diploma or degree above the bach..."] <- "University above bachelor"
+data1$education[data1$education=="Trade certificate or diploma"] <- "Trade certificate"
+
+data1 %>% ggplot(aes(x = age_at_first_birth)) + geom_histogram(bins = 5) + labs(x = "age at first birth", title ="Figure 1")
+
+
+data1 %>% ggplot(aes(y = age_at_first_birth, x = total_children)) +geom_point() + labs(x = "total children", y = "age at first birth", title ="Figure 2")
+
+mod <- lm(age_at_first_birth~ ever_married + education + total_children, data = data1)
+#rename the variables
+
+summary(mod)
+
+#discussion
+
+```
+After we cleaned the gss data using the gss_cleaning program provided by Rohan Alexander and Sam Caetano, we selected the variables we are interested in and removed the "NA" and "Don't know" values in the data. 
+
+In Figure1, we created a geom_histogram which shows the distribution of the counts of age at first birth for our sample population. Since our response variable in this study is the age at first birth, we think it's valuable to show its distribution. 
+
+In Figure2, we created a scatter plot of total children vs age at first birth. We are trying to study if there's a linear relationship between the two variables or any observable trends.
+
+The model we chose to help analyzing our study is general linear regression model because we have multiple predictor variables and our response variable is numerical. We also assume our parameters have fixed values. The response variable is the age at first birth. We have one numerical predictor variable which is total children and we have two categorical predictor variables which are ever married and education. We created a summary of the statistics of our model to show the coefficients, intercept value and p-values of our model for further analysis. The two categorical predictor variables are split into multiple dummy variables. The reference group for variable "ever_married" is "No" and the reference group for variable "education" is "bachelor". We also renamed the categories of education into shorter names. 
+
+## Discussion
+
+Here you will discuss conclusions drawn from the results and comment on how it relates to the original goal of the study (which was specified in the Introduction).
+
+The estimated regression equation we have is: 
+$$\hat{E}(Y_i)= 32.16108 + 0.32160ever\_married -2.40253college -3.60030highschool -4.48961less\_than\_highschool\\-4.48961trade-0.89187above\_bachelor-1.70838below\_bachelor-1.39208total\_children$$
+From the results table, We can see that the p-value for ever_married is very big which means that it cannot support the hypothesis that ever_married and age_at first_birth are correlated. The other variables all have really small p-values which shows that they have correlations with age_at_first_birth. 
+
+
+
+
+
+
+
+# Weaknesses
+
+Here we discuss weaknesses of the study, data, analysis, etc. You can also discuss areas for improvement.
+
+# Next Steps
+
+Here you discuss subsequent work to be done after this report. This can include next steps in terms of statistical analysis (perhaps there is a more efficient algorithm available, or perhaps there is a caveat in the data that would allow for some new technique). Future steps should also be specified in terms of the study setting (eg. including a follow-up survey on something, or a subsequent study that would complement the conclusions of your report).
+
+
+## References
+
+- JJ Allaire and Yihui Xie and Jonathan McPherson and Javier Luraschi and Kevin Ushey and Aron Atkins and
+  Hadley Wickham and Joe Cheng and Winston Chang and Richard Iannone (2020). rmarkdown: Dynamic Documents
+  for R. R package version 2.4. URL https://rmarkdown.rstudio.com.
+  
+- Sam Firke (2020). janitor: Simple Tools for Examining and Cleaning Dirty Data. R package version 2.0.1.
+  https://github.com/sfirke/janitor
+  
+- Wickham et al., (2019). Welcome to the tidyverse. Journal of Open Source Software, 4(43), 1686,
+  https://doi.org/10.21105/joss.01686
+  
+- General social survey on Family(cycle31),2017
+
+- Rohan Alexander and Sam Caetano. gss_cleaning.2020
