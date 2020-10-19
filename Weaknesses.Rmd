@@ -1,0 +1,36 @@
+---
+title: "Weaknesses"
+author: "Nick Callow"
+date: "10/19/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+# Weaknesses
+
+This data and study is not without its limitations. While much can be done to correct for missing data, sampling bias, and other problems, some issues are beyond our control or unfeasible given the timeline of this project. There are two particular weaknesses we want to highlight and discuss. First, our multivariate linear regression results are calculated on the assumption of census data. That is, adjustments (finite population correction) were not made to account for taking only a sample of the target population. To make these corrections, we require data on the size of each stratum. However, this information is not published by Statistics Canada, and we lack a reliable means of estimating these values. This implies that some of our results, including the slope and intercept estimates, standard errors, and significance values, may be slighly off.
+
+Second, as discussed briefly earlier, Statistics Canada elects to exclude residents of the territories from the sample. Census data from 2016 indicates that in Nunanvut and the Northwest Territories, Indigenous peoples make up the majority of the population, at $85\%$ and $50\%$, respectively (Statistics Canada, 2020). Therefore, this group is not particularly well represented in the GSS, and subsequently our analysis. In general, the GSS excludes residents of the territories from its target populations. Two recent exceptions exist to this convention, the 2009 and 2014 cycles on victimization (Statistics Canada, 2019). Future research may examine whether there are significant differences between residents of the territories and provinces on the GSS. This work could settle whether the GSS target populations are representative of the Canadian population. 
+
+
+# References
+
+Statistics Canada (2019, February 2019). *General Social Survey: An Overview, 2019*. Government of Canada. https://www150.statcan.gc.ca/n1/pub/89f0115x/89f0115x2019001-eng.htm
+
+Statistics Canada. (2020). Aboriginal Peoples Highlight Tables, 2016 Census. Retrieved October 19, 2020, from https://www12.statcan.gc.ca/census-recensement/2016/dp-pd/hlt-fst/abo-aut/Table.cfm?Lang=Eng
+
+
+
+
+
+
+
+
+
+
+
+
+
