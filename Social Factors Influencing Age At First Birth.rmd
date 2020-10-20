@@ -1,0 +1,291 @@
+---
+title: "Social Factors Influencing Age At First Birth"
+author: "Jessica Glustien, Nick Callow, Min Zhang, Dongqi Bi"
+date: "Oct 19 2020"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+Code and data supporting this analysis is available at: https://github.com/jessglustien/sta304-ps2
+
+## Abstract
+
+This paper examines different possible factors that can affect the age at which a woman gives birth to her first child. Using data collected in the 2017 GSS, a multiple regression model was created to examine the relationship between women's marital status, education level, total number of children, and the age that the first child was born at. This model showed a negative relationship between total number of children and age at first birth, and a positive relationship between the level of education achieved and the age at first birth. A strong correlation was not found between marital status and age at first birth. 
+
+
+## Introduction
+
+In this assignemnt, our team will use data from the 2017 General Social Survey on Family (GSS) package monitored by Statistics Canada to estimate a woman's age at her first birth. The 2017 GSS is a sample survey conducted from February 2 to November 30 2018 via telephone. The target population includes all Canadians who are 15 or over living in the 10 provinces.
+
+When our team members are doing research about factors affecting a woman's age at her first birth, we found that "women with college degrees have children an average of seven years later than those without."(Bui & Miller, 2020) This interests us a lot as in general, if a woman is pursuing a professional education like a law degree, she needs to put much more effort and time to complete it, which will delay her age at her first birth. This also potentially affects their marriage age, that is, if a woman gets married at a relatively old age, she may have her first child at a relatively old age too. However, if a woman decides to have more children, she may start to have her first child at a relatively young age. 
+
+In consequence, we decide that we will set variables Ever_married, Education and Total_children as predictor variables and Age_at_first_birth will be response variable from gss.csv dataset. Based on our assumptions, we also think that the statistical model we will create will be linear regression model. We provide an overview of the data set, the linear regression model we're using, the result, and finally a discussion of our analysis, its weaknesses, and possible directions for future research. 
+
+```{r Data Set and Libraries, message=FALSE, include=FALSE}
+# Calling the Data Set #
+
+# install.packages("dplyr")
+# install.packages("gridExtra")
+
+library(readr)
+gss <- read_csv("gss.csv")
+
+library(tidyverse)
+library(visdat)
+library(skimr)
+library(gridExtra)
+
+```
+
+## Data
+
+The data set selected for analysis is the 2017 General Social Survey (GSS). Data collection took place between February and November of 2017, and the goal of the survey is to learn more about Canadian family structures (Statistics Canada, 2017). In this section, we provide an analysis of the survey, including its key features, methdology, and merits.
+
+### Target Population and Sampling Frame
+
+To learn more about Canadian family structures, the GSS focuses on a specific section of Canadians. This group, called the *target population* is "all non-institutionalized persons 15 years of age or older, living in the ten provinces of Canada" (Statistics Canada, 2017, Data Sources and Methdology Section). Of note is that residents of the territories are excluded from the GSS. This decision by Statistics Canada is explored further in the *Weaknesses* section below.
+
+To survey individuals in the target population, we need to know who they are and how to contact them. This list of people is called the *sampling frame*, and Statistics Canada recruits individuals from this list (according to the sampling approach detailed below). The sampling frame of the GSS is built in the following way. First, a list of landline and cellular phone numbers are obtained from the Census (Statistics Canada, 2017). These phone numbers are then grouped into households if they share the same address (Statistics Canada, 2017). Ideally, everyone in the target population is included in the sampling frame (Wu & Thompson, 2020). However, when this is the not the case, it introduces a bias in the survey known as *coverage error*. The sampling frame of the GSS does not capture everyone in the target population. Specifically, individuals without telephone service, or a known phone number, will be excluded (Statistics Canada, 2017). This coverage error implies that the GSS may not be entirely representative of the Canadian population, and therefore, our estimates should be approached cautiously.
+
+### Sampling Approach
+
+After creating the sampling frame, Statistics Canada needs to decide how to pick individuals from this list, since it would be too costly to survey them all. The method of selecting Canadians from the frame is called the *sampling approach*. The GSS employs a *stratified random sampling approach*. First, the target population is divided into smaller groups, called strata, where individuals share a common characteristics or property (Caetano, 2020b). In this survey, Canadians are grouped by geographic location for a total of twenty seven strata (Statistics Canada, 2017). Second, a percentage of households in each stratum are randomly selected (Statistics Canada, 2017). Third, one eligible member of each chosen household is randomly selected for participation (Statistics Canada, 2017). These last two steps employ *simple random sampling*, meaning survey participants are picked randomly, and each member of the sampling frame has an equal chance of selection (Caetano, 2020b).
+
+There are several benefits to this method. First, the GSS uses a probability sampling approach (stratified random sampling). The odds of any one individual being included in the survey are known, and can be weighted to reflect the characteristics of the populations (Caetano, 2020a). Therefore, we know that our data reflects well Canadian family structures. Second, this approach can be replicated, allowing for verification and comparison (Caetano, 2020a). However, there are some limitations. First, probability sampling, including stratified random sampling, is very costly. The decline in GSS sample sizes since 1999 may reflect this fact (Statistics Canada, 2019). Second, random selection implies that participants may not want to participate in the survey (Caetano, 2020a). Therefore, the non-response rate may be high, and this may introduce bias into the survey (see Sampled Population and Missing data below).
+
+### Sampled Population and Missing Data
+
+```{r Distribution of Ages, message=FALSE}
+
+gss %>% 
+  select(age) %>% 
+  ggplot(mapping = aes(x=age)) + geom_histogram() + ggtitle("Figure 1: Distribution of Ages") + theme(plot.title = element_text(size = 9))
+
+```
+
+```{r Distributions of Marital and Minority Statuses, message=FALSE}
+
+plot1a <- gss %>% 
+  select(marital_status) %>% 
+  ggplot(mapping = aes(x=marital_status)) + geom_bar() + ggtitle("Figure 2: Distribution of Marital Status") + theme(plot.title = element_text(size = 9)) + theme(axis.text.x = element_text(angle = 90))
+
+plot1b <- gss %>% 
+  select(vis_minority) %>% 
+  ggplot(mapping = aes(x=vis_minority)) + geom_bar() + ggtitle("Figure 3: Distribution of Visible Minority Status") + theme(plot.title = element_text(size = 9)) + theme(axis.text.x = element_text(angle = 90))
+
+grid.arrange(plot1a, plot1b, ncol=2)
+
+```
+
+Not everyone selected to participate in the survey will do so. The set of individuals who take part are called the *sampled population* (Wu & Thompson, 2020). In the GSS, a total of $n = 20,602$ individuals completed some or all of the survey questions. This yielded a response rate of $52.6\%$. The non-response rate appears fairly high, raising concerns about whether some demographics were consistently left out the data. The above figures represent distributions of several key demographic variables (age, marital status, and visible minority status). We compared these distributions with results from the 2016 Census. 
+
+
+### Age
+
+The distribution of ages in the GSS differs somewhat from the Canadian population, as represented in the Census. There are too many older individuals in the survey, particularly those eighty-years and older (Statistics Canada, 2019). Likewise, Census data portrays a *unimodal* distribution of ages, skewed slightly toward the older side of the spectrum (Statistics Canada, 2019). In contrast, the GSS appears *bi-modal*, with spikes in the mid-thirties and early sixties.
+
+### Marital Status
+
+The sampling of marital status remains fairly consistent between the GSS and Census 2016. Specifically, $43\%$ and $44\%$ of respondents reported not being in a couple (divorced, separated, single, widowed) in the Census and GSS, respectively (Statistics Canada, 2019). This result indicates the GSS is representative of the Canadian population on this indicator, which is of particular importance to our analysis.
+
+
+### Visible Minority Status
+
+The GSS has undersampled visible minorities. According to Census data in 2016, approximately $25\%$ percent of respondents identified as a visible minority (Statistics Canada, 2019). Comparatively, only approximately $13\%$ of GSS respondents identified as a visible minority.
+
+
+```{r Missing Data, message=FALSE}
+
+gss_plot4 <- gss %>%
+  select(ever_married, education, total_children, age_at_first_birth)
+
+plot4 <- visdat::vis_miss(gss_plot4)
+
+plot4 + ggtitle("Figure 4: Missing Data in Variables of Interest")
+
+```
+
+Missing data is a concern for any survey. Individuals who agree to participate may not complete all the questions. When this happens, holes appear in the data, and this makes analysis more difficult. As seen in Figure 1, all of our predictor variables have limited missing data. In contrast, our response variable, *age_at_first_birth*, has a non-response rate of $38.18\%$. While this may seem large and concerning, this rate is over inflated. Many of the participants with missing data in *age_at_first_birth*, have no children. Therefore, this question was not applicable to them. In supplementary analysis (see Appendix), we find that of the $n=20,602$ respondents, only $1,286$ individuals, or $6.2\%$, who had children did not respond to *age_at_first_birth*. Therefore, we consider the variable still worthy and capable of analysis. 
+
+## Model
+
+A multiple regression model will be used to predict the value of age_at_first_birth, by using predictor variables income_family, ever_married, education, and total children. This model was chosen as our goal is to predict a numeric value by examining the relationship between multiple other predictors. ever_married is a boolean value and both ever_married and income_family are categorical values, so the regression model will use dummy variables to simulate them. 
+
+Since ever_married is boolean, which means it is either true or false, it will only require one dummy variable to represent it. education is split into seven categories, and so will require six dummy variables. This is one less than the number of categories because the final option is a reference variable, and is selected by setting all of the dummy variables equal to zero. These will be less_than_highschool, high_school, trade, college, uni_bachelor, uni_above_bachelor. If all siz of these variables are turned off, that will indicate that the responder has an education level of uni_bachelors_degree. 
+
+The final model will take the following form: 
+$\\ y_i = \beta_0 + \beta_1x_{i1} + \beta_2x_{i2} + \beta_3x_{i3} + \beta_4x_{i4} + \beta_5x_{i5} +\beta_6x_{i6} +\beta_7x_{i7} + \beta_8x_{i8} + \epsilon_i$
+
+Where: 
+$\\ x_1 = ever\_marriedYes \\ x_2 = college \\ x_3 = highschool \\ x_4 = less\_than\_highschool \\ x_5 = trade \\ x_6 = uni\_bachelor \\ x_7 = uni\_above\_bachelor \\ x_8 = total\_children$
+
+The i value represents which sample of the data is being referenced (ie. i = 2 means the value of the second sample). Each x variable takes on a new value for each sample. $y_i$ is the result for the sample i, in our case the age the woman responding first gave birth at. $e_i$ is the error term for that sample. Since our model will not always perfectly predict the outcome variable, the error term represents how much our prediction was off by for that particular sample. 
+
+Our calculated model will be an estimate of that exact model, and can be represented by: 
+
+$\\ \hat{E}(Y_i|X_{i1},X_{i2},X_{i3},X_{i4},X_{i5},X_{i6},X_{i7},X_{i8}) = \hat{\beta_0} + \hat{\beta_1}X_{i1} + \hat{\beta_2}X_{i2} + \hat{\beta_3}X_{i3} + \hat{\beta_4}X_{i4} + \hat{\beta_5}X_{i5} + \hat{\beta_6}X_{i6} + \hat{\beta_7}X_{i7} + \hat{\beta_8}X_{i8}$
+
+Y represents the output variable age_at_first_birth, which are using our model to present. The X values represent all of the auxilliary variables: ever_married, total_children, and education, which we are using as the basis of our prediction. The notation of $\hat{E}(Y_i|X_{i1},X_{i2},X_{i3},X_{i4},X_{i5},X_{i6},X_{i7},X_{i8})$ means that we are calculating the expected value of our result variable, given values for all of the predictor variables. 
+
+The $\beta$'s are the values our model will calculate, and represent the weight of each factor on the outcome. Larger negative or positive $\beta$ values will represent that the variable has a large effect on the outcome, while smaller values will indicate it does not have much of an effect. Positive $\beta$ values indicate that the predictor variable tends to increase the age at first birth, while negative values would indicate that the predicator variable tends to decrease it. 
+
+This new equation has hats on the beta's and expected value because these are no longer exact values, but estimations. The error term has been dropped for the same reason. Now instead of just representing sample data collected by the GSS, this model can be used to predict the age at first birth based on any given values of the predictor variables. 
+
+When using R to create this model, we had to choose between using the lm and the surveylm functions. The main difference between these two functions is that surveylm allows for the use of a population correction, and can take into account the sizes of stata for the stratified sampling technique. While both of those features increase accuracy, neither the population size or the individual strata size are known and so would have to be approximated. We decided it would be better to use the lm function, instead of introducing the possible error caused by estimating these values for the surveylm function. 
+
+## Results
+
+```{r, echo=FALSE, include=FALSE, results="hide" }
+library(janitor)
+library(tidyverse)
+library(sjPlot)
+library(sjmisc)
+library(sjlabelled)
+
+```
+
+```{r, echo=FALSE}
+
+gss <- read.csv("gss.csv", stringsAsFactors = FALSE)
+data1 <- gss %>% select(ever_married, education, total_children, age_at_first_birth)%>%filter(!is.na(total_children), !is.na(age_at_first_birth), ever_married!="Don't know")
+
+data1$education[data1$education=="Less than high school diploma or its equivalent"] <- "Less than high school"
+data1$education[data1$education=="High school diploma or a high school equivalency certificate"] <- "High School"
+data1$education[data1$education=="College, CEGEP or other non-university certificate or di..."] <- "College"
+data1$education[data1$education=="University certificate or diploma below the bachelor's level"] <- "University below bachelor"
+data1$education[data1$education=="Bachelor's degree (e.g. B.A., B.Sc., LL.B.)"] <- "Bachelor"
+data1$education[data1$education=="University certificate, diploma or degree above the bach..."] <- "University above bachelor"
+data1$education[data1$education=="Trade certificate or diploma"] <- "Trade certificate"
+
+data1 %>% ggplot(aes(x = age_at_first_birth)) + geom_histogram(bins = 5) + labs(x = "age at first birth", title ="Figure 5: Distribution of Age at First Birth")
+
+
+data1 %>% ggplot(aes(y = age_at_first_birth, x = total_children)) +geom_point() + labs(x = "total children", y = "age at first birth", title ="Figure 6: Scatterplot of Total Children Against Age at First Birth")
+
+mod <- lm(age_at_first_birth~ ever_married + education + total_children, data = data1)
+#rename the variables
+
+tab_model(mod)
+
+#discussion
+
+```
+After we cleaned the gss data using the gss_cleaning program provided by Rohan Alexander and Sam Caetano, we selected the variables we are interested in and removed the "NA" and "Don't know" values in the data. 
+
+In Figure5, we created a histogram which shows the distribution of the counts of age at first birth for our sample population. Since our response variable in this study is the age at first birth, we think it's valuable to show its distribution. 
+
+In Figure6, we created a scatter plot of total children vs age at first birth. We are trying to study if there's a linear relationship between the two variables or any observable trends.
+
+The model we chose to help analyzing our study is general linear regression model because we have multiple predictor variables and our response variable is numerical. We also assume our parameters have fixed values. The response variable is the age at first birth. We have one numerical predictor variable which is total children and we have two categorical predictor variables which are ever married and education. We created a summary of the statistics of our model to show the coefficients, intercept value and p-values of our model for further analysis. The two categorical predictor variables are split into multiple dummy variables. The reference group for variable "ever_married" is "No" and the reference group for variable "education" is "bachelor". We also renamed the categories of education into shorter names. 
+
+## Discussion
+
+The estimated regression equation we have is: 
+$\hat{E}(Y_i)= 32.16108 + 0.32160ever\_married -2.40253college -3.60030highschool -4.48961less\_than\_highschool  -4.48961trade- \\ 0.89187above\_bachelor-1.70838below\_bachelor-1.39208total\_children \\$
+
+As expected, Figure 5 shows that age at first birth is right skewed. This is predictable given that it becomes harder to conveive at older ages. We see that the majority of respondents had their first child between the ages of 20 and 30. This is also unsurprising given that this is the time that most people finish school and starting their own families. 
+
+Figure 6 shows that women who have a larger number of children, had their first child at an earlier age. For women who only had between 1 and 3 children, there is not a strong relationship between total children and age at first birth. Overall there is not a clear linear relationship between these two variables. The only consistent relationship shown is for women who had greater than three children. 
+
+Our regression model shows that all coefficients except for ever_married had a sufficiently strong p-value to suggest a correlation between them and the outcome variable. The p-value for each predictor represents the probability of mistakenly rejecting the null hypothesis (assuming the predictor variable and outcome variable are not correlated), so a low p-value indicates that the data supports rejecting the null hypothesis, and that the two variables are in fact correlated. 
+
+So overall the p-values show that ever_married is not a significant factor in this model, but the two other predictor variables have a correlation with the outcome. 
+
+Looking at the coefficients of the education dummy variables, a clear trend is that the higher level of education reached by a woman, the later in life she has her first child. All of the given coefficients are in relation to the reference variable, achieving a bachelor's degree. So all of the levels lower than that have a negative coefficient, but above bachelor's has a positive coefficient, which indicates having the first child later in life than all the other options. 
+
+The coeffcient for total_children is also negative, indicating that as you have more children the age of first birth will be lower. This intuitively makes sense and is consistent with the trend shown in Figure 6. 
+
+The $R^2$ value, also known as the coefficient of determination, indicates what proportion of the variance in the outcome variable (age at first birth) is determined by the explanatory variables in this model. We report an $R^2$ value of 0.218, this indicates that 21.8% of the total variation of age at first birth is attributed to the explanatory variables. Therfore our chosen model moderately represents the factors that influence age at first birth. Although it appears low, coefficients of determination are often low because it is difficult to control for all of the factors that influence the outcome variable. 
+
+### Weaknesses
+
+This data and study is not without its limitations. While much can be done to correct for missing data, sampling bias, and other problems, some issues are beyond our control or unfeasible given the timeline of this project. There are two particular weaknesses we want to highlight and discuss. First, our multivariate linear regression results are calculated on the assumption of census data. That is, adjustments (finite population correction) were not made to account for taking only a sample of the target population. To make these corrections, we require data on the size of each stratum. However, this information is not published by Statistics Canada, and we lack a reliable means of estimating these values. This implies that some of our results, including the slope and intercept estimates, standard errors, and significance values, may be slighly off.
+
+Second, as discussed briefly earlier, Statistics Canada elects to exclude residents of the territories from the sample. Census data from 2016 indicates that in Nunanvut and the Northwest Territories, Indigenous peoples make up the majority of the population, at $85\%$ and $50\%$, respectively (Statistics Canada, 2020). Therefore, this group is not particularly well represented in the GSS, and subsequently our analysis. In general, the GSS excludes residents of the territories from its target populations. Two recent exceptions exist to this convention, the 2009 and 2014 cycles on victimization (Statistics Canada, 2019). Future research may examine whether there are significant differences between residents of the territories and provinces on the GSS. This work could settle whether the GSS target populations are representative of the Canadian population. 
+
+### Next Steps
+
+A possible future step in terms of statistical analysis would be to test for colinearity between the predictor variabels used in our regression model. This would help to verify the accuracy of our model and that correlation exists between our predictor variables. 
+
+Going forward we also would be interested in expanding the area of our investigation and adding in additional predictor variables that we believe are relevant to the outcome. One area that we did not have a chance to explore in this report would be the effect of income on the age women have their first child at. Our analysis did not find a strong correlation between marital status and age at first birth, but potentially if we were to examine the interaction between marital status and househould income, this would have a stronger relationship with age at first birth. 
+
+## Appendix 
+
+Table 1: Examining Age At First Birth
+To further examine the missing data of *age at first birth*, we create two new variables, *outcome_valid* and *outcome_missing*. Responses are considered valid if either there is a response for *age_at_first_birth*, or there is no response for missing data, and the same participant indicated they have zero children. Responses are considered valid otherwise (that is, there is no response for *age_at_first_birth*, and individuals did have children). Analysis indicates that most respondents who did not fill out this question did not have children. Therefore, the data is not missing, rather miscoded.
+
+```{r}
+
+gss %>% 
+  mutate(outcome_valid = ifelse(age_at_first_birth == "NA" & total_children == 0, 1,0)) %>%
+  mutate(outcome_missing = ifelse(age_at_first_birth == "NA" & total_children > 1, 1,0)) %>% 
+  count(outcome_missing == 1, outcome_valid==1)
+
+```
+
+```{r, results = "hide"}
+
+nrow(gss[gss$age_at_first_birth=="NA",])
+
+nrow(gss[gss$marital_status=="Living common-law",])
+nrow(gss[gss$marital_status=="Married",])
+nrow(gss[gss$vis_minority=="Visible minority",])
+
+nrow(gss[gss$marital_status=="Divorced",])
+nrow(gss[gss$marital_status=="Separated",])
+nrow(gss[gss$marital_status=="Single, never married",])
+nrow(gss[gss$marital_status=="Widowed",])
+
+
+```
+
+## References
+
+Bui, Q., & Miller, C. (2020). The Age That Women Have Babies: How a Gap Divides America (Published 2018). Nytimes.com. Retrieved 19 October 2020, from https://www.nytimes.com/interactive/2018/08/04/upshot/up-birth-age-gap.html.
+
+Caetano, S. (2020a, September 21). Probability versus Non-Probability Sampling [PowerPoint Slides]. Quercus. https://q.utoronto.ca/courses/184060/files/8975319?module_item_id=1816946
+
+Caetano, S. (2020b, September 28). Sampling Techniques [PowerPoint Slides]. Quercus. https://q.utoronto.ca/courses/184060/files/9058287?module_item_id=1828122
+
+General social survey on Family(cycle31),2017
+
+JJ Allaire and Yihui Xie and Jonathan McPherson and Javier Luraschi and Kevin Ushey and Aron Atkins and
+  Hadley Wickham and Joe Cheng and Winston Chang and Richard Iannone (2020). rmarkdown: Dynamic Documents
+  for R. R package version 2.4. URL https://rmarkdown.rstudio.com.
+  
+Lüdecke D (2020). _sjPlot: Data Visualization for Statistics in Social Science_. R package
+version 2.8.5, <URL: https://CRAN.R-project.org/package=sjPlot>.
+
+Lüdecke D (2018). “sjmisc: Data and Variable Transformation Functions.” _Journal of Open
+Source Software_, *3*(26), 754. doi: 10.21105/joss.00754 (URL:
+http://doi.org/10.21105/joss.00754).
+
+Lüdecke D (2020). _sjlabelled: Labelled Data Utility Functions (Version 1.1.7)_. doi:
+10.5281/zenodo.1249215 (URL: http://doi.org/10.5281/zenodo.1249215), <URL:
+https://CRAN.R-project.org/package=sjlabelled>.
+
+Rohan Alexander and Sam Caetano. gss_cleaning.2020
+
+Sam Firke (2020). janitor: Simple Tools for Examining and Cleaning Dirty Data. R package version 2.0.1.
+  https://github.com/sfirke/janitor
+
+Statistics Canada (2019, February 2019). *General Social Survey: An Overview, 2019*. Government of Canada. https://www150.statcan.gc.ca/n1/pub/89f0115x/89f0115x2019001-eng.htm
+
+Statistics Canada. (2020). Aboriginal Peoples Highlight Tables, 2016 Census. Retrieved October 19, 2020, from https://www12.statcan.gc.ca/census-recensement/2016/dp-pd/hlt-fst/abo-aut/Table.cfm?Lang=Eng
+
+Statistics Canada (2017, December 19). *General Social Survey - Family (GSS)*. Government of Canada. https://www23.statcan.gc.ca/imdb/p2SV.pl?Function=getSurvey&Id=335816
+
+Statistics Canada. (2019, April 3). Historical Age Pyramid. Retrieved October 18, 2020, from https://www12.statcan.gc.ca/census-recensement/2016/dp-pd/pyramid/pyramid.cfm?type=1
+
+Statistics Canada. (2019, June 18). Census Profile, 2016 Census. Retrieved October 18, 2020, from https://www12.statcan.gc.ca/census-recensement/2016/dp-pd/prof/details/page.cfm?Lang=E
+
+Wickham et al., (2019). Welcome to the tidyverse. Journal of Open Source Software, 4(43), 1686,
+  https://doi.org/10.21105/joss.01686
+
+Wu, C., & Thompson, M. E. (2020). *Sampling Theory and Practice.* Cham: Springer International Publishing.
+
